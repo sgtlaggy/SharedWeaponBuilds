@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SharedWeaponBuilds.Client/SharedWeaponBuilds.Client.csproj" Id="829ff4bf-e46f-4b56-bdcd-a00e29b73b50" />
+  <Project Path="SharedWeaponBuilds.Server/SharedWeaponBuilds.Server.csproj" />
+</Solution>
