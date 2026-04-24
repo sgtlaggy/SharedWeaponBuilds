@@ -80,15 +80,15 @@ public sealed class EditBuildScreenPatch : ModulePatch
 
         if (handbookButtonObject != null)
         {
-            Image handbookImage = handbookButtonObject.GetComponent<Image>();
-            Image buttonImageComponent = _importFromClìpboardButton.transform.GetChild(1).GetComponentInChildren<Image>();
+            var handbookImage = handbookButtonObject.GetComponent<Image>();
+            var buttonImageComponent = _importFromClìpboardButton.transform.GetChild(1).GetComponentInChildren<Image>();
 
             if (handbookImage != null && buttonImageComponent != null)
             {
                 buttonImageComponent.sprite = handbookImage.sprite;
                 buttonImageComponent.preserveAspect = true;
 
-                RectTransform iconRect = buttonImageComponent.rectTransform;
+                var iconRect = buttonImageComponent.rectTransform;
                 iconRect.sizeDelta = new Vector2(18f, 18f);
             }
         }
@@ -118,15 +118,15 @@ public sealed class EditBuildScreenPatch : ModulePatch
 
         if (handbookButtonObject != null)
         {
-            Image handbookImage = handbookButtonObject.GetComponent<Image>();
-            Image buttonImageComponent = _importFromClìpboardButton.transform.GetChild(1).GetComponentInChildren<Image>();
+            var handbookImage = handbookButtonObject.GetComponent<Image>();
+            var buttonImageComponent = _importFromClìpboardButton.transform.GetChild(1).GetComponentInChildren<Image>();
 
             if (handbookImage != null && buttonImageComponent != null)
             {
                 buttonImageComponent.sprite = handbookImage.sprite;
                 buttonImageComponent.preserveAspect = true;
 
-                RectTransform iconRect = buttonImageComponent.rectTransform;
+                var iconRect = buttonImageComponent.rectTransform;
                 iconRect.sizeDelta = new Vector2(18f, 18f);
             }
         }
@@ -226,16 +226,16 @@ public sealed class EnableKeyboardBindingsPatch : ModulePatch
 
     private static bool IsCopyShortcutPressed()
     {
-        bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        bool cPressed = Input.GetKeyDown(KeyCode.C);
+        var ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        var cPressed = Input.GetKeyDown(KeyCode.C);
 
         return ctrlHeld && cPressed;
     }
 
     private static bool IsPasteShortcutPressed()
     {
-        bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        bool vPressed = Input.GetKeyDown(KeyCode.V);
+        var ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        var vPressed = Input.GetKeyDown(KeyCode.V);
 
         return ctrlHeld && vPressed;
     }

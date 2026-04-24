@@ -72,7 +72,7 @@ public static class BuildImportExportUtils
             return null;
         }
 
-        int missingTemplatesCount = 0;
+        var missingTemplatesCount = 0;
 
         foreach (var modelItems in model.Items)
         {

@@ -63,14 +63,14 @@ public sealed class WeaponBuildService(
 
         WeaponBuilds.Clear();
 
-        string[] files = Directory.GetFiles(BuildsPath, "*.json", SearchOption.TopDirectoryOnly);
-        int loadedAmount = 0;
+        var files = Directory.GetFiles(BuildsPath, "*.json", SearchOption.TopDirectoryOnly);
+        var loadedAmount = 0;
 
-        foreach (string file in files)
+        foreach (var file in files)
         {
             try
             {
-                WeaponBuild? build = await jsonUtil.DeserializeFromFileAsync<WeaponBuild>(file);
+                var build = await jsonUtil.DeserializeFromFileAsync<WeaponBuild>(file);
 
                 if (build is null || build.Items is null)
                 {
@@ -90,8 +90,10 @@ public sealed class WeaponBuildService(
 
                 if (missingTemplatesCount > 0)
                 {
+                    var templateLabel = missingTemplatesCount == 1 ? "template" : "templates";
+
                     logger.Error(
-                        $"[Shared Weapon Builds] Failed to load weapon build from '{file}' due to {missingTemplatesCount} missing templates"
+                        $"[Shared Weapon Builds] Failed to load weapon build from '{file}' due to {missingTemplatesCount} missing {templateLabel}"
                     );
                     continue;
                 }
@@ -120,7 +122,7 @@ public sealed class WeaponBuildService(
 
         if (loadedAmount > 0)
         {
-            string buildLabel = loadedAmount == 1 ? "weapon build" : "weapon builds";
+            var buildLabel = loadedAmount == 1 ? "weapon build" : "weapon builds";
             logger.Success($"[Shared Weapon Builds] Loaded {loadedAmount} {buildLabel}");
         }
     }
@@ -161,7 +163,7 @@ public sealed class WeaponBuildService(
         }
         else
         {
-            string filePath = GetBuildFilePath(weaponBuild.Id, weaponBuild.Name!);
+            var filePath = GetBuildFilePath(weaponBuild.Id, weaponBuild.Name!);
 
             if (!_fileMap.TryAdd(weaponBuild.Id, filePath))
             {
@@ -202,7 +204,7 @@ public sealed class WeaponBuildService(
 
     private string GetBuildFilePath(MongoId buildId, string buildName)
     {
-        string safeName = SanitizeFileName(buildName);
+        var safeName = SanitizeFileName(buildName);
 
         return Path.Combine(BuildsPath, $"-{safeName}-{buildId}.json");
     }
@@ -214,7 +216,7 @@ public sealed class WeaponBuildService(
             return "build";
         }
 
-        string sanitized = value.Trim().Normalize(NormalizationForm.FormKC);
+        var sanitized = value.Trim().Normalize(NormalizationForm.FormKC);
 
         foreach (char c in Path.GetInvalidFileNameChars())
         {

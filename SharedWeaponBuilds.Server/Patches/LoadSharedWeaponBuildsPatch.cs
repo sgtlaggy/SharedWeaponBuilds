@@ -28,11 +28,11 @@ public sealed class LoadSharedWeaponBuildsPatch : AbstractPatch
             return;
         }
 
-        List<WeaponBuild> weaponBuilds = weaponBuildService.GetWeaponBuilds();
+        var weaponBuilds = weaponBuildService.GetWeaponBuilds();
 
         foreach (var sharedBuild in weaponBuilds)
         {
-            int existingIndex = -1;
+            var existingIndex = -1;
 
             for (int i = 0; i < __result.WeaponBuilds.Count; i++)
             {

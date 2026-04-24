@@ -165,7 +165,7 @@ public sealed class SharedWeaponBuildsWSManager
 
     public EntityNodeClass CreateHandbookEntityNode(WeaponBuildClass build)
     {
-        EntityNodeClass handbookEntityNode = _handbookClass[build.Item.TemplateId];
+        var handbookEntityNode = _handbookClass[build.Item.TemplateId];
 
         return new EntityNodeClass
         {

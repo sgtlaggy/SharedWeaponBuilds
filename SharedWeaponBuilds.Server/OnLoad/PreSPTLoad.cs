@@ -21,7 +21,7 @@ public sealed class PreSPTLoad(ISptLogger<PreSPTLoad> logger) : IOnLoad
 
         try
         {
-            foreach (AbstractPatch patch in _patches)
+            foreach (var patch in _patches)
             {
                 logger.Debug($"[Shared Weapon Builds] Loading patch: {patch.GetType().Name}");
                 patch.Enable();

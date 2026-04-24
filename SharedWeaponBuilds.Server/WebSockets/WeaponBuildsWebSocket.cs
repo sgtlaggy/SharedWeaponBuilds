@@ -31,7 +31,7 @@ public sealed class WeaponBuildsWebSocket(ISptLogger<WeaponBuildsWebSocket> logg
 
     public Task OnClose(WebSocket ws, HttpContext context, string sessionIdContext)
     {
-        KeyValuePair<string, WebSocket> client = _clientWebSockets.FirstOrDefault(x => x.Value == ws);
+        var client = _clientWebSockets.FirstOrDefault(x => x.Value == ws);
 
         if (client.Key != null)
         {
@@ -45,7 +45,7 @@ public sealed class WeaponBuildsWebSocket(ISptLogger<WeaponBuildsWebSocket> logg
 
     public async Task OnConnection(WebSocket ws, HttpContext context, string sessionIdContext)
     {
-        string authHeader = context.Request.Headers.Authorization.ToString();
+        var authHeader = context.Request.Headers.Authorization.ToString();
 
         if (string.IsNullOrEmpty(authHeader))
         {
@@ -53,10 +53,10 @@ public sealed class WeaponBuildsWebSocket(ISptLogger<WeaponBuildsWebSocket> logg
             return;
         }
 
-        string base64EncodedString = authHeader.Split(' ')[1];
-        string decodedString = Encoding.UTF8.GetString(Convert.FromBase64String(base64EncodedString));
-        string[] authorization = decodedString.Split(':');
-        string userSessionID = authorization[0];
+        var base64EncodedString = authHeader.Split(' ')[1];
+        var decodedString = Encoding.UTF8.GetString(Convert.FromBase64String(base64EncodedString));
+        var authorization = decodedString.Split(':');
+        var userSessionID = authorization[0];
 
         logger.Debug($"[{GetSocketId()}] User is {userSessionID}");
 
@@ -91,7 +91,7 @@ public sealed class WeaponBuildsWebSocket(ISptLogger<WeaponBuildsWebSocket> logg
 
     public async Task BroadcastAsync(MongoId broadcaster, UpdatedWeaponMessage message)
     {
-        foreach (KeyValuePair<string, WebSocket> websocket in _clientWebSockets)
+        foreach (var websocket in _clientWebSockets)
         {
             if (websocket.Key == broadcaster)
             {
