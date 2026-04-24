@@ -6,7 +6,8 @@ namespace SharedWeaponBuilds.Server;
 
 public record SharedWeaponBuildsModMetadata : AbstractModMetadata
 {
-    public const int SharedWeaponBuildsPriorityOffset = 10;
+    // All the way at the end of each typepriority, to make sure we catch all weapons being loaded prior
+    public const int SharedWeaponBuildsPriorityOffset = 99999;
 
     public override string ModGuid { get; init; } = "wtf.archangel.sharedweaponbuilds";
     public override string Name { get; init; } = "Shared Weapon Builds";
