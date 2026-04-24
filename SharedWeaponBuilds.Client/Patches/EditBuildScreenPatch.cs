@@ -114,12 +114,12 @@ public sealed class EditBuildScreenPatch : ModulePatch
         _exportToClipboardButton.transform.SetSiblingIndex(4);
         _exportToClipboardButton.GetComponentInChildren<LocalizedText>().LocalizationKey = "COPY BUILD ...";
 
-        var handbookButtonObject = GameObject.Find("Preloader UI/BottomPanel/Content/TaskBar/Tabs/Handbook/HandbookButton/Icon");
+        var handbookButtonObject = GameObject.Find("Common UI/Common UI/InventoryScreen/Tab Bar/Tabs/Tasks/Normal/Icon");
 
         if (handbookButtonObject != null)
         {
             var handbookImage = handbookButtonObject.GetComponent<Image>();
-            var buttonImageComponent = _importFromClìpboardButton.transform.GetChild(1).GetComponentInChildren<Image>();
+            var buttonImageComponent = _exportToClipboardButton.transform.GetChild(1).GetComponentInChildren<Image>();
 
             if (handbookImage != null && buttonImageComponent != null)
             {
