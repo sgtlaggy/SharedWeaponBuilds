@@ -9,12 +9,14 @@ using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.PresetBuild;
 using SPTarkov.Server.Core.Models.Eft.Profile;
 using SPTarkov.Server.Core.Models.Utils;
+using SPTarkov.Server.Core.Services;
 using SPTarkov.Server.Core.Utils;
 
 namespace SharedWeaponBuilds.Server.Services;
 
 [Injectable(InjectionType.Singleton)]
 public sealed class WeaponBuildService(
+    DatabaseService databaseService,
     ModHelper modHelper,
     JsonUtil jsonUtil,
     WeaponBuildsWebSocket weaponBuildsWebSocket,
@@ -31,6 +33,11 @@ public sealed class WeaponBuildService(
     public string BuildsPath
     {
         get { return Path.Combine(ModPath, "WeaponBuilds"); }
+    }
+
+    public List<WeaponBuild> GetWeaponBuilds()
+    {
+        return WeaponBuilds.Values.ToList();
     }
 
     public bool TryGetBuild(MongoId buildId, out WeaponBuild? weaponBuild)
@@ -52,6 +59,8 @@ public sealed class WeaponBuildService(
             Directory.CreateDirectory(BuildsPath);
         }
 
+        var itemDatabase = databaseService.GetTables().Templates.Items;
+
         WeaponBuilds.Clear();
 
         string[] files = Directory.GetFiles(BuildsPath, "*.json", SearchOption.TopDirectoryOnly);
@@ -61,12 +70,29 @@ public sealed class WeaponBuildService(
         {
             try
             {
-                //Todo: Validate template against DB here much like we do in the client
                 WeaponBuild? build = await jsonUtil.DeserializeFromFileAsync<WeaponBuild>(file);
 
-                if (build is null)
+                if (build is null || build.Items is null)
                 {
                     logger.Error($"[Shared Weapon Builds] Failed to load weapon build from '{file}'");
+                    continue;
+                }
+
+                var missingTemplatesCount = 0;
+
+                foreach (var item in build.Items)
+                {
+                    if (!itemDatabase.ContainsKey(item.Template))
+                    {
+                        missingTemplatesCount++;
+                    }
+                }
+
+                if (missingTemplatesCount > 0)
+                {
+                    logger.Error(
+                        $"[Shared Weapon Builds] Failed to load weapon build from '{file}' due to {missingTemplatesCount} missing templates"
+                    );
                     continue;
                 }
 
@@ -97,11 +123,6 @@ public sealed class WeaponBuildService(
             string buildLabel = loadedAmount == 1 ? "weapon build" : "weapon builds";
             logger.Success($"[Shared Weapon Builds] Loaded {loadedAmount} {buildLabel}");
         }
-    }
-
-    public List<WeaponBuild> GetWeaponBuilds()
-    {
-        return WeaponBuilds.Values.ToList();
     }
 
     public async Task SaveWeaponBuild(MongoId sessionId, PresetBuildActionRequestData request)
