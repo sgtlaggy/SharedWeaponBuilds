@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # Ignore Lots of Loot finished build folder
 build/
+build-addons/
