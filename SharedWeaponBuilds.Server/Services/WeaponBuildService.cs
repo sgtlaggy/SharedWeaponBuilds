@@ -61,6 +61,7 @@ public sealed class WeaponBuildService(
         {
             try
             {
+                //Todo: Validate template against DB here much like we do in the client
                 WeaponBuild? build = await jsonUtil.DeserializeFromFileAsync<WeaponBuild>(file);
 
                 if (build is null)
