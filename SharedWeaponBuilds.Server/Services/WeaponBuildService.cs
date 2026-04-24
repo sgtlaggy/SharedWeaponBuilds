@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
 using SharedWeaponBuilds.Server.WebSockets;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
@@ -23,6 +25,7 @@ public sealed class WeaponBuildService(
     /// Concurrent Dictionary keyed to build id, and then the build
     /// </summary>
     public ConcurrentDictionary<MongoId, WeaponBuild> WeaponBuilds { get; private set; } = [];
+    private ConcurrentDictionary<MongoId, string> _fileMap { get; set; } = [];
 
     public string ModPath { get; init; } = modHelper.GetAbsolutePathToModFolder(Assembly.GetExecutingAssembly());
     public string BuildsPath
@@ -63,6 +66,12 @@ public sealed class WeaponBuildService(
                 if (build is null)
                 {
                     logger.Error($"[Shared Weapon Builds] Failed to load weapon build from '{file}'");
+                    continue;
+                }
+
+                if (!_fileMap.TryAdd(build.Id, file))
+                {
+                    logger.Warning($"[Shared Weapon Builds] Failed to map {build.Id} to {file}");
                     continue;
                 }
 
@@ -124,8 +133,22 @@ public sealed class WeaponBuildService(
             }
         );
 
-        string filePath = GetBuildFilePath(weaponBuild.Id);
-        await File.WriteAllTextAsync(filePath, jsonUtil.Serialize(weaponBuild));
+        if (_fileMap.TryGetValue(weaponBuild.Id, out var path))
+        {
+            await File.WriteAllTextAsync(path, jsonUtil.Serialize(weaponBuild));
+        }
+        else
+        {
+            string filePath = GetBuildFilePath(weaponBuild.Id, weaponBuild.Name!);
+
+            if (!_fileMap.TryAdd(weaponBuild.Id, filePath))
+            {
+                logger.Warning($"[Shared Weapon Builds] Failed to map {weaponBuild.Id} to {filePath}");
+                return;
+            }
+
+            await File.WriteAllTextAsync(filePath, jsonUtil.Serialize(weaponBuild));
+        }
 
         await weaponBuildsWebSocket.BroadcastAsync(
             sessionId,
@@ -142,18 +165,48 @@ public sealed class WeaponBuildService(
     {
         WeaponBuilds.TryRemove(buildId, out _);
 
-        string filePath = GetBuildFilePath(buildId);
-
-        if (File.Exists(filePath))
+        if (_fileMap.TryGetValue(buildId, out var path))
         {
-            File.Delete(filePath);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            _fileMap.TryRemove(buildId, out _);
         }
 
         await weaponBuildsWebSocket.BroadcastAsync(sessionId, new Models.UpdatedWeaponMessage { BuildId = buildId, IsDeleted = true });
     }
 
-    private string GetBuildFilePath(MongoId buildId)
+    private string GetBuildFilePath(MongoId buildId, string buildName)
     {
-        return Path.Combine(BuildsPath, $"{buildId}.json");
+        string safeName = SanitizeFileName(buildName);
+
+        return Path.Combine(BuildsPath, $"-{safeName}-{buildId}.json");
+    }
+
+    private static string SanitizeFileName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "build";
+        }
+
+        string sanitized = value.Trim().Normalize(NormalizationForm.FormKC);
+
+        foreach (char c in Path.GetInvalidFileNameChars())
+        {
+            sanitized = sanitized.Replace(c, '-');
+        }
+
+        sanitized = Regex.Replace(sanitized, @"\s+", " ");
+        sanitized = sanitized.Trim(' ', '.');
+
+        if (string.IsNullOrWhiteSpace(sanitized))
+        {
+            return "build";
+        }
+
+        return sanitized;
     }
 }

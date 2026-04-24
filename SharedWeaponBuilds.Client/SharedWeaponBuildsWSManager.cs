@@ -24,6 +24,7 @@ public sealed class SharedWeaponBuildsWSManager
     private static CurrentScreenSingletonClass _currentScreenSingletonClass;
     public static ISession Session;
     public static ItemFactoryClass ItemFactoryClass;
+    public static NotifierView notifierView;
     public static SharedWeaponBuildsWSManager Instance;
     public static bool Exists
     {
@@ -66,6 +67,7 @@ public sealed class SharedWeaponBuildsWSManager
 
         ItemFactoryClass = Singleton<ItemFactoryClass>.Instance;
         Session = Singleton<ClientApplication<ISession>>.Instance.Session;
+        notifierView = Singleton<PreloaderUI>.Instance.NotifierView;
         _handbookClass = Singleton<HandbookClass>.Instance;
         _currentScreenSingletonClass = CurrentScreenSingletonClass.Instance;
 

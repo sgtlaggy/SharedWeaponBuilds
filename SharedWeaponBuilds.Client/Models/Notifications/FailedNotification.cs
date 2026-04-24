@@ -2,24 +2,23 @@
 
 namespace SharedWeaponBuilds.Client.Models.Notifications;
 
-public sealed class ExportedWeaponBuildNotification : NotificationAbstractClass
+public sealed class FailedNotification(string failedReason, bool export = false) : NotificationAbstractClass
 {
     public override string Description
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(BuildName))
+            if (export)
             {
-                return $"Exported weapon build {BuildName} to clipboard";
+                return $"Could not export weapon build: {failedReason}";
             }
             else
             {
-                return "Successfully exported current weapon build to clipboard";
+                return $"Could not import weapon build: {failedReason}";
             }
         }
     }
 
-    public string BuildName { get; set; }
     public override ENotificationIconType Icon
     {
         get { return ENotificationIconType.Alert; }

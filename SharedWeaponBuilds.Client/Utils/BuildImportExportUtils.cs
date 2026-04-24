@@ -1,7 +1,6 @@
-﻿using Comfort.Common;
-using EFT;
-using EFT.UI;
+﻿using EFT;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SharedWeaponBuilds.Client.Models;
 using SharedWeaponBuilds.Client.Models.Notifications;
 using UnityEngine;
@@ -13,26 +12,95 @@ public static class BuildImportExportUtils
     public static WeaponBuildClass Import()
     {
         var clipboard = GUIUtility.systemCopyBuffer;
-        return ValidateAndCreateWeaponBuild(JsonConvert.DeserializeObject<WeaponClipboardModel>(clipboard));
+
+        if (string.IsNullOrWhiteSpace(clipboard))
+        {
+            return null;
+        }
+
+        if (!TryDeserializeClipboard(clipboard, out WeaponClipboardModel clipboardModel))
+        {
+            return null;
+        }
+
+        return ValidateAndCreateWeaponBuild(clipboardModel);
+    }
+
+    private static bool TryDeserializeClipboard(string json, out WeaponClipboardModel model)
+    {
+        model = null;
+
+        try
+        {
+            var parsedToken = JToken.Parse(json);
+
+            if (parsedToken.Type != JTokenType.Object)
+            {
+                return false;
+            }
+
+            model = parsedToken.ToObject<WeaponClipboardModel>();
+
+            if (model == null)
+            {
+                SharedWeaponBuildsWSManager.notifierView.method_5(
+                    new FailedNotification("Could not deserialize JSON in clipboard to a weapon build")
+                );
+                return false;
+            }
+
+            return true;
+        }
+        catch (JsonReaderException)
+        {
+            return false;
+        }
+        catch (JsonSerializationException)
+        {
+            SharedWeaponBuildsWSManager.notifierView.method_5(
+                new FailedNotification("JSON in clipboard does not match a weapon build model")
+            );
+            return false;
+        }
     }
 
     private static WeaponBuildClass ValidateAndCreateWeaponBuild(WeaponClipboardModel model)
     {
-        // Todo: Validate each item and check if tpl is in items array
-
         if (model.Items == null || model.Items.Length == 0)
         {
-            throw new InvalidOperationException("No items were provided.");
+            SharedWeaponBuildsWSManager.notifierView.method_5(new FailedNotification("No items for the weapon build were provided"));
+            return null;
         }
 
-        var tree = SharedWeaponBuildsWSManager.ItemFactoryClass.FlatItemsToTree(model.Items);
+        int missingTemplatesCount = 0;
 
-        if (!tree.Items.TryGetValue(model.Root, out var item))
+        foreach (var modelItems in model.Items)
         {
-            throw new InvalidOperationException("Root item was not found in the built tree.");
+            if (!SharedWeaponBuildsWSManager.ItemFactoryClass.ItemTemplates.ContainsKey(modelItems._tpl))
+            {
+                missingTemplatesCount++;
+            }
         }
 
-        Singleton<PreloaderUI>.Instance.NotifierView.method_5(
+        if (missingTemplatesCount > 0)
+        {
+            SharedWeaponBuildsWSManager.notifierView.method_5(
+                new FailedNotification($"Failed to import weapon build due to {missingTemplatesCount} missing item templates")
+            );
+            return null;
+        }
+
+        var itemTree = SharedWeaponBuildsWSManager.ItemFactoryClass.FlatItemsToTree(model.Items);
+
+        if (!itemTree.Items.TryGetValue(model.Root, out var item))
+        {
+            SharedWeaponBuildsWSManager.notifierView.method_5(
+                new FailedNotification("Root item was not found in the imported weapon build")
+            );
+            return null;
+        }
+
+        SharedWeaponBuildsWSManager.notifierView.method_5(
             new ImportedWeaponBuildNotification { BuildName = model.Name, Username = model.ExporterName }
         );
 
@@ -43,7 +111,8 @@ public static class BuildImportExportUtils
     {
         if (items.Length == 0)
         {
-            throw new InvalidOperationException("No items were provided.");
+            SharedWeaponBuildsWSManager.notifierView.method_5(new FailedNotification("No items for the weapon build were provided", true));
+            return;
         }
 
         if (string.IsNullOrEmpty(buildName))
@@ -61,6 +130,6 @@ public static class BuildImportExportUtils
         };
 
         GUIUtility.systemCopyBuffer = JsonConvert.SerializeObject(exportModel);
-        Singleton<PreloaderUI>.Instance.NotifierView.method_5(new ExportedWeaponBuildNotification { BuildName = buildName });
+        SharedWeaponBuildsWSManager.notifierView.method_5(new ExportedWeaponBuildNotification { BuildName = buildName });
     }
 }

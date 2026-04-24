@@ -8,14 +8,25 @@ public sealed class ImportedWeaponBuildNotification : NotificationAbstractClass
     {
         get
         {
-            if (!string.IsNullOrEmpty(Username))
+            var hasBuildName = !string.IsNullOrWhiteSpace(BuildName);
+            var hasUsername = !string.IsNullOrWhiteSpace(Username);
+
+            if (hasBuildName && hasUsername)
             {
-                return $"Succesfully imported build {BuildName} from {Username}";
+                return $"Successfully imported build {BuildName} from {Username}";
             }
-            else
+
+            if (hasBuildName)
             {
-                return $"Succesfully imported build {BuildName}";
+                return $"Successfully imported build {BuildName}";
             }
+
+            if (hasUsername)
+            {
+                return $"Successfully imported a build from {Username}";
+            }
+
+            return "Successfully imported a build";
         }
     }
 

@@ -19,6 +19,9 @@ public sealed class SharedWeaponBuildsWSInitPatch : ModulePatch
         // Allow the initial request to go through first, in async this happens in Postfix
         await __result;
 
-        SharedWeaponBuildsPlugin.Instance.WeaponBuildWebSocket = new();
+        if (SharedWeaponBuildsPlugin.Instance.WeaponBuildWebSocket == null)
+        {
+            SharedWeaponBuildsPlugin.Instance.WeaponBuildWebSocket = new();
+        }
     }
 }

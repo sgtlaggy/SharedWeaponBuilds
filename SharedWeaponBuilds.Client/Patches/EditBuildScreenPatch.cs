@@ -11,6 +11,10 @@ namespace SharedWeaponBuilds.Client.Patches;
 
 public sealed class EditBuildScreenPatch : ModulePatch
 {
+    public static readonly FieldInfo ItemClassField = typeof(EditBuildScreen).GetField(
+        "Item",
+        BindingFlags.Instance | BindingFlags.NonPublic
+    );
     public static readonly FieldInfo WeaponBuildClassField = typeof(EditBuildScreen).GetField(
         "weaponBuildClass",
         BindingFlags.Instance | BindingFlags.NonPublic
@@ -129,16 +133,26 @@ public sealed class EditBuildScreenPatch : ModulePatch
 
         _exportToClipboardButton.onClick.AddListener(() =>
         {
+            // We get item as this contains the build + any changes the user might have made
+            var currentItem = (Item)ItemClassField.GetValue(__instance);
+            // We get the current build for the name, if any exists at this point in time
             var currentBuild = (WeaponBuildClass)WeaponBuildClassField.GetValue(__instance);
 
-            if (currentBuild == null)
+            if (currentItem == null)
             {
                 return;
             }
 
-            var flatBuild = SharedWeaponBuildsWSManager.ItemFactoryClass.TreeToFlatItems(currentBuild.Item);
+            var buildName = "";
 
-            BuildImportExportUtils.Export(currentBuild.HandbookName, currentBuild.Item.Id, flatBuild);
+            if (currentBuild != null)
+            {
+                buildName = currentBuild.HandbookName;
+            }
+
+            var flatBuild = SharedWeaponBuildsWSManager.ItemFactoryClass.TreeToFlatItems(currentItem);
+
+            BuildImportExportUtils.Export(buildName, currentItem.Id, flatBuild);
         });
     }
 }
@@ -167,18 +181,34 @@ public sealed class EnableKeyboardBindingsPatch : ModulePatch
     [PatchPrefix]
     public static void Prefix(EditBuildScreen __instance)
     {
+        // This is necessary because the armor editor also uses this screen
+        if (__instance == null || __instance.GetType() != typeof(EditBuildScreen))
+        {
+            return;
+        }
+
         if (IsCopyShortcutPressed())
         {
+            // We get item as this contains the build + any changes the user might have made
+            var currentItem = (Item)EditBuildScreenPatch.ItemClassField.GetValue(__instance);
+            // We get the current build for the name, if any exists at this point in time
             var currentBuild = (WeaponBuildClass)EditBuildScreenPatch.WeaponBuildClassField.GetValue(__instance);
 
-            if (currentBuild == null)
+            if (currentItem == null)
             {
                 return;
             }
 
-            var flatBuild = SharedWeaponBuildsWSManager.ItemFactoryClass.TreeToFlatItems(currentBuild.Item);
+            var buildName = "";
 
-            BuildImportExportUtils.Export(currentBuild.HandbookName, currentBuild.Item.Id, flatBuild);
+            if (currentBuild != null)
+            {
+                buildName = currentBuild.HandbookName;
+            }
+
+            var flatBuild = SharedWeaponBuildsWSManager.ItemFactoryClass.TreeToFlatItems(currentItem);
+
+            BuildImportExportUtils.Export(buildName, currentItem.Id, flatBuild);
         }
 
         if (IsPasteShortcutPressed())
