@@ -74,6 +74,8 @@ public sealed class EditBuildScreenPatch : ModulePatch
         _importFromClìpboardButton = UnityEngine.Object.Instantiate(buttonToCopy, buttonToCopy.transform.parent, false);
         _importFromClìpboardButton.name = "ImportBuildFromClipboard";
         _importFromClìpboardButton.transform.SetSiblingIndex(2);
+
+        //Todo: Localize on server
         _importFromClìpboardButton.GetComponentInChildren<LocalizedText>().LocalizationKey = "PASTE BUILD ...";
 
         var handbookButtonObject = GameObject.Find("Preloader UI/BottomPanel/Content/TaskBar/Tabs/Handbook/HandbookButton/Icon");
@@ -112,6 +114,8 @@ public sealed class EditBuildScreenPatch : ModulePatch
         _exportToClipboardButtonCanvas = _exportToClipboardButton.GetComponent<CanvasGroup>();
         _exportToClipboardButton.name = "SaveBuildToClipboard";
         _exportToClipboardButton.transform.SetSiblingIndex(4);
+
+        //Todo: Localize on server
         _exportToClipboardButton.GetComponentInChildren<LocalizedText>().LocalizationKey = "COPY BUILD ...";
 
         var handbookButtonObject = GameObject.Find("Common UI/Common UI/InventoryScreen/Tab Bar/Tabs/Tasks/Normal/Icon");

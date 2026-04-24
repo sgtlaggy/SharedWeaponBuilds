@@ -17,7 +17,7 @@ public sealed class RemoveWeaponBuildPatch : AbstractPatch
     protected override MethodBase GetTargetMethod()
     {
         return typeof(BuildsCallbacks).GetMethod(nameof(BuildsCallbacks.DeleteBuild))
-            ?? throw new InvalidOperationException("Could not BuildsCallbacks.DeleteBuild");
+            ?? throw new InvalidOperationException("Could not find BuildsCallbacks.DeleteBuild");
     }
 
     [PatchPrefix]

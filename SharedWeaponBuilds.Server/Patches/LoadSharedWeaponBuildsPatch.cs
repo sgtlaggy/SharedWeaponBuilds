@@ -13,7 +13,7 @@ public sealed class LoadSharedWeaponBuildsPatch : AbstractPatch
     protected override MethodBase GetTargetMethod()
     {
         return typeof(BuildController).GetMethod(nameof(BuildController.GetUserBuilds))
-            ?? throw new InvalidOperationException("Could not BuildController.GetUserBuilds");
+            ?? throw new InvalidOperationException("Could not find BuildController.GetUserBuilds");
     }
 
     [PatchPostfix]
